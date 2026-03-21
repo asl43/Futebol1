@@ -6,1324 +6,710 @@
     <title>Campeonatos de Futebol</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        /* --- Variáveis CSS para Cores --- */
         :root {
-            --primary-color: #1a73e8; /* Azul Google */
+            --primary-color: #1a73e8;
             --primary-dark: #0f48a1;
-            --accent-color: #ffb300; /* Laranja/Amarelo vibrante */
-            --accent-dark: #cc8c00;
-            --success-color: #34a853; /* Verde Google */
+            --accent-color: #ffb300;
+            --success-color: #34a853;
             --success-dark: #2b8443;
-            --danger-color: #ea4335; /* Vermelho Google */
+            --danger-color: #ea4335;
             --danger-dark: #bb3328;
-            --light-bg: rgba(240, 243, 245, 0.95); /* Fundo mais claro e suave */
+            --light-bg: rgba(240, 243, 245, 0.95);
             --dark-text: #202124;
             --light-text: #5f6368;
-            --white-bg: rgba(255, 255, 255, 0.98); /* Fundo quase opaco para clareza */
+            --white-bg: rgba(255, 255, 255, 0.98);
             --border-color: #dadce0;
-            --shadow-light: rgba(0, 0, 0, 0.05);
-            --shadow-medium: rgba(0, 0, 0, 0.12);
-            --shadow-heavy: rgba(0, 0, 0, 0.2);
+            --shadow-light: rgba(0,0,0,0.05);
+            --shadow-medium: rgba(0,0,0,0.12);
+            --shadow-heavy: rgba(0,0,0,0.2);
         }
-
-        /* --- Estilos Gerais --- */
-        html, body {
-            height: 100%;
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
-        }
-
+        html, body { height: 100%; min-height: 100vh; margin: 0; padding: 0; overflow-x: hidden; }
         body {
             font-family: 'Roboto', sans-serif;
             text-align: center;
             background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_nKWFUu62dYTds0SG-X4A1e5FEkHToj1pHA&s');
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: var(--dark-text);
-            padding-bottom: 50px;
-            line-height: 1.6;
-            display: flex;
-            flex-direction: column;
+            background-size: cover; background-position: center; background-repeat: no-repeat; background-attachment: fixed;
+            color: var(--dark-text); padding-bottom: 80px; line-height: 1.6; display: flex; flex-direction: column;
         }
 
-        h2 {
-            font-family: 'Poppins', sans-serif;
-            color: var(--primary-dark);
-            margin-bottom: 25px;
-            font-size: 2em;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 12px;
-            position: relative; /* Para o efeito de linha */
-            display: inline-block; /* Para a linha ficar no tamanho do texto */
-        }
-
-        h2::after {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -2px; /* Ajuste para sobrepor a borda */
-            width: 100%;
-            height: 4px; /* Mais grossa */
-            background-color: var(--primary-color);
-            border-radius: 2px;
-            transform: scaleX(0.8); /* Linha um pouco menor que o título */
-        }
-
-        /* --- Cabeçalho e Botão de Modo Admin --- */
+        /* HEADER */
         header {
-            background-color: var(--white-bg);
-            padding: 18px 30px;
+            background-color: var(--white-bg); padding: 18px 30px;
             box-shadow: 0 4px 15px var(--shadow-medium);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            backdrop-filter: blur(5px);
+            display: flex; justify-content: center; align-items: center;
+            position: sticky; top: 0; z-index: 1000; backdrop-filter: blur(5px);
         }
+        header h1 { font-family: 'Poppins', sans-serif; margin: 0; font-size: 2.2em; color: var(--primary-dark); }
 
-        header h1 {
-            font-family: 'Poppins', sans-serif;
-            margin: 0;
-            font-size: 2.2em;
-            color: var(--primary-dark);
-            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
+        /* TRIGGER ADMIN INVISÍVEL */
+        #adminTrigger {
+            position: fixed; bottom: 16px; right: 16px;
+            width: 18px; height: 18px; background: transparent; border: none;
+            border-radius: 50%; cursor: default; z-index: 9999; opacity: 0;
+            transition: opacity 0.4s; padding: 0; font-size: 0;
         }
+        #adminTrigger:hover { opacity: 0.2; background: var(--light-text); cursor: pointer; }
 
-        /* Botão admin invisível - canto inferior direito */
-        #adminModeToggle {
-            position: fixed;
-            bottom: 18px;
-            right: 18px;
-            width: 14px;
-            height: 14px;
-            background-color: transparent;
-            border: none;
-            border-radius: 50%;
-            cursor: default;
-            z-index: 9999;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            padding: 0;
-            font-size: 0;
+        /* PONTO PULSANTE */
+        #adminDot {
+            position: fixed; bottom: 21px; right: 19px; width: 8px; height: 8px;
+            background: var(--danger-color); border-radius: 50%; display: none;
+            z-index: 9997; pointer-events: none; animation: pulseDot 2s infinite;
         }
+        @keyframes pulseDot { 0%,100%{opacity:.6;transform:scale(1)} 50%{opacity:1;transform:scale(1.5)} }
+        body.admin-mode #adminDot { display: block; }
 
-        #adminModeToggle:hover {
-            opacity: 0.15;
-            background-color: var(--light-text);
-            cursor: pointer;
+        /* BOTÃO SAIR (VISÍVEL QUANDO ADMIN ATIVO) */
+        #exitAdminBtn {
+            display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--danger-color); color: white; border: none; border-radius: 30px;
+            padding: 13px 30px; font-size: 1em; font-weight: 700; font-family: 'Poppins', sans-serif;
+            cursor: pointer; z-index: 9998; box-shadow: 0 4px 16px rgba(234,67,53,.45);
+            transition: background .2s, transform .2s, box-shadow .2s;
+            align-items: center; gap: 8px;
         }
+        #exitAdminBtn:hover { background: var(--danger-dark); transform: translateX(-50%) translateY(-2px); box-shadow: 0 6px 20px rgba(234,67,53,.55); }
+        body.admin-mode #exitAdminBtn { display: flex; }
 
-        #adminModeToggle.active-admin {
-            opacity: 0.25;
-            background-color: var(--danger-color);
+        /* STATUS SYNC */
+        #syncStatus {
+            position: fixed; top: 78px; right: 14px; background: var(--white-bg);
+            border: 1px solid var(--border-color); border-radius: 10px; padding: 7px 12px;
+            font-size: 0.78em; color: var(--light-text); z-index: 998;
+            box-shadow: 0 2px 8px var(--shadow-light); display: flex; align-items: center; gap: 6px;
         }
+        #syncDot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-color); flex-shrink: 0; }
+        #syncStatus.syncing { color: var(--primary-color); }
+        #syncStatus.syncing #syncDot { background: var(--primary-color); animation: pulseDot 1s infinite; }
+        #syncStatus.synced  { color: var(--success-color); }
+        #syncStatus.synced  #syncDot { background: var(--success-color); }
+        #syncStatus.error   { color: var(--danger-color); }
+        #syncStatus.error   #syncDot { background: var(--danger-color); }
 
-        #adminModeToggle.active-admin:hover {
-            opacity: 0.45;
-        }
-
-        /* Indicador sutil de admin ativo */
-        #adminStatusDot {
-            position: fixed;
-            bottom: 18px;
-            right: 18px;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: var(--danger-color);
-            z-index: 9998;
-            display: none;
-            animation: pulse-dot 2s infinite;
-            pointer-events: none;
-        }
-
-        @keyframes pulse-dot {
-            0%, 100% { opacity: 0.7; transform: scale(1); }
-            50% { opacity: 1; transform: scale(1.3); }
-        }
-
-        body.admin-mode #adminStatusDot {
-            display: block;
-        }
-
-        /* --- Formulários e Containers (Visibilidade controlada por JS) --- */
+        /* SEÇÕES ADMIN */
         .admin-section {
-            display: none;
-            background-color: var(--white-bg);
-            padding: 35px;
-            border-radius: 15px;
-            box-shadow: 0 8px 25px var(--shadow-heavy);
-            max-width: 750px;
-            margin: 40px auto;
-            text-align: left;
-            border: 1px solid var(--border-color);
-            opacity: 0;
-            transform: translateY(20px);
-            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+            display: none; background-color: var(--white-bg); padding: 35px; border-radius: 15px;
+            box-shadow: 0 8px 25px var(--shadow-heavy); max-width: 750px; margin: 40px auto;
+            text-align: left; border: 1px solid var(--border-color);
+            opacity: 0; transform: translateY(20px); transition: opacity .4s, transform .4s;
         }
-
-        .admin-section.active {
-            display: block;
-            opacity: 1;
-            transform: translateY(0);
+        .admin-section.active { display: block; opacity: 1; transform: translateY(0); }
+        .admin-section h2 {
+            font-family: 'Poppins', sans-serif; color: var(--primary-dark);
+            margin-top: 0; margin-bottom: 16px; font-size: 1.5em;
+            border-bottom: 2px solid var(--primary-color); padding-bottom: 10px;
         }
+        .admin-section p { color: var(--light-text); margin-bottom: 18px; font-size: .97em; }
 
-        .admin-section p {
-            color: var(--light-text);
-            margin-bottom: 25px;
-            font-size: 1.05em;
+        label { display: block; margin-bottom: 7px; font-weight: 600; color: var(--dark-text); font-size: .98em; }
+        input[type="text"], input[type="email"], select {
+            width: calc(100% - 28px); padding: 13px 14px; margin-bottom: 18px;
+            border: 1px solid var(--border-color); border-radius: 10px;
+            font-size: 1em; font-family: 'Roboto', sans-serif; background: white;
+            transition: border-color .3s, box-shadow .3s;
         }
+        input:focus, select:focus { border-color: var(--primary-color); box-shadow: 0 0 0 3px rgba(26,115,232,.2); outline: none; }
 
-        .form-container label, .add-column-container label {
-            display: block;
-            margin-bottom: 12px;
-            font-weight: 600;
-            color: var(--dark-text);
-            font-size: 1.1em;
-        }
+        .btn { padding: 13px 26px; border: none; border-radius: 30px; cursor: pointer; font-size: 1em; font-weight: 700; font-family: 'Poppins', sans-serif; transition: background .2s, transform .2s, box-shadow .2s; margin-right: 8px; margin-top: 4px; }
+        .btn-success { background: var(--success-color); color: white; }
+        .btn-success:hover { background: var(--success-dark); transform: translateY(-2px); }
+        .btn-primary { background: var(--primary-color); color: white; }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-2px); }
 
-        .form-container input[type="text"],
-        .form-container select,
-        .add-column-container input[type="text"],
-        .form-container input[type="email"] {
-            width: calc(100% - 28px); /* Padding ajustado */
-            padding: 14px;
-            margin-bottom: 22px;
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 1.05em;
-            box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.03);
-            transition: border-color 0.3s ease, box-shadow 0.3s ease;
-        }
+        .form-message { margin-top: 4px; margin-bottom: 12px; padding: 10px 14px; border-radius: 8px; font-size: .9em; font-weight: 500; display: none; }
+        .form-message.success { background: rgba(52,168,83,.1); color: var(--success-dark); border: 1px solid var(--success-color); display: block; }
+        .form-message.error   { background: rgba(234,67,53,.1); color: var(--danger-dark);  border: 1px solid var(--danger-color);   display: block; }
 
-        .form-container input[type="text"]:focus,
-        .form-container select:focus,
-        .add-column-container input[type="text"]:focus,
-        .form-container input[type="email"]:focus {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(26, 115, 232, 0.2); /* Sombra de foco mais forte */
-            outline: none;
-        }
-
-        .form-container button, .add-column-container button {
-            background-color: var(--success-color);
-            color: white;
-            padding: 14px 30px;
-            border: none;
-            border-radius: 30px;
-            cursor: pointer;
-            font-size: 1.15em;
-            font-weight: 600;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            margin-right: 15px;
-            box-shadow: 0 4px 10px var(--shadow-light);
-        }
-
-        .form-container button:hover, .add-column-container button:hover {
-            background-color: var(--success-dark);
-            transform: translateY(-3px);
-            box-shadow: 0 6px 15px var(--shadow-medium);
-        }
-
-        .add-column-container button {
-            background-color: var(--primary-color);
-        }
-
-        .add-column-container button:hover {
-            background-color: var(--primary-dark);
-        }
-
-        /* Feedback visual */
-        .form-message {
-            margin-top: -15px;
-            margin-bottom: 15px;
-            padding: 10px 15px;
-            border-radius: 8px;
-            font-size: 0.95em;
-            font-weight: 500;
-            display: none; /* Oculto por padrão */
-        }
-
-        .form-message.success {
-            background-color: rgba(52, 168, 83, 0.1);
-            color: var(--success-dark);
-            border: 1px solid var(--success-color);
-            display: block;
-        }
-
-        .form-message.error {
-            background-color: rgba(234, 67, 53, 0.1);
-            color: var(--danger-dark);
-            border: 1px solid var(--danger-color);
-            display: block;
-        }
-
-
-        /* --- Container das Colunas --- */
+        /* GRID COLUNAS */
         .columns-container {
-            flex-grow: 1; /* Ocupa o espaço restante */
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 30px;
-            max-width: 1600px;
-            margin: 40px auto;
-            padding: 30px;
-            background-color: var(--white-bg);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px var(--shadow-heavy);
-            min-height: 250px;
-            border: 1px solid var(--border-color);
+            flex-grow: 1; display: flex; flex-wrap: wrap; justify-content: center;
+            gap: 30px; max-width: 1600px; margin: 40px auto; padding: 30px;
+            background: var(--white-bg); border-radius: 20px;
+            box-shadow: 0 10px 30px var(--shadow-heavy); min-height: 250px; border: 1px solid var(--border-color);
         }
-
-
-        /* --- Estilo de Cada Coluna --- */
         .column {
-            flex: 1;
-            min-width: 290px;
-            max-width: 420px;
-            background-color: var(--light-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 15px;
-            padding: 25px;
-            box-shadow: 0 6px 15px var(--shadow-light);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 220px;
-            transition: all 0.3s ease;
+            flex: 1; min-width: 290px; max-width: 420px; background: var(--light-bg);
+            border: 1px solid var(--border-color); border-radius: 15px; padding: 25px;
+            box-shadow: 0 6px 15px var(--shadow-light); display: flex; flex-direction: column;
+            align-items: center; min-height: 220px; transition: all .3s;
         }
+        .column.drag-over { background: rgba(26,115,232,.1); border: 2px dashed var(--primary-color); box-shadow: 0 0 0 6px rgba(26,115,232,.2); }
 
-        .column.drag-over {
-            background-color: rgba(26, 115, 232, 0.1);
-            border: 2px dashed var(--primary-color);
-            box-shadow: 0 0 0 6px rgba(26, 115, 232, 0.25);
-            transform: scale(1.01);
+        /* CABEÇALHO DA COLUNA */
+        .column-header { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; position: relative; margin-bottom: 4px; }
+        .column-title {
+            font-family: 'Poppins', sans-serif; color: var(--primary-dark);
+            font-size: 1.35em; font-weight: 700; margin: 0; flex: 1; text-align: center;
+            transition: color .2s; padding: 4px 30px; cursor: default;
         }
-
-        /* --- Container dos Campeonatos (dentro de cada coluna) --- */
-        .championships-list {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 20px;
-            width: 100%;
-            margin-top: 20px;
-            min-height: 160px;
-            flex-grow: 1;
-            padding-top: 10px; /* Espaçamento para o título */
-        }
-
-
-        /* --- Estilo de Cada Cartão de Campeonato --- */
-        .championship-card {
-            background-color: var(--white-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 18px;
-            width: 200px; /* Ligeiramente maior */
-            box-shadow: 0 4px 12px var(--shadow-light);
-            transition: all 0.25s ease-in-out;
-            text-decoration: none;
-            color: inherit;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            position: relative;
-            cursor: grab;
-        }
-
-        .championship-card.dragging {
-            opacity: 0.7;
-            border: 2px dashed var(--primary-color);
-            box-shadow: 0 0 0 5px rgba(26, 115, 232, 0.2);
-            transform: scale(0.97);
-        }
-
-        .championship-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 22px var(--shadow-medium);
-            border-color: var(--primary-color);
-        }
-
-
-        .championship-card img {
-            max-width: 100%;
-            height: 120px; /* Um pouco maior */
-            object-fit: contain;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            background-color: #f8f8f8;
-            padding: 8px;
-            border: 1px solid #eee;
-        }
-
-
-        .championship-card h3 {
-            font-size: 1.2em;
-            margin: 0;
-            color: var(--dark-text);
-            text-align: center;
-            min-height: 3em; /* Para 2 linhas de texto */
-            overflow: hidden;
-            text-overflow: ellipsis;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            font-weight: 500;
-        }
-
-
-        /* --- Cabeçalho da coluna com controles admin --- */
-        .column-header {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            position: relative;
-        }
-
-        .column-header h2 {
-            margin: 0;
-            cursor: default;
-            transition: color 0.2s ease;
-            flex: 1;
-            text-align: center;
-        }
-
-        body.admin-mode .column-header h2 {
-            cursor: pointer;
-        }
-
-        body.admin-mode .column-header h2:hover {
-            color: var(--primary-color);
-        }
-
-        body.admin-mode .column-header h2::after {
-            /* sobrescreve o pseudo-elemento decorativo herdado */
-            display: none;
-        }
-
+        body.admin-mode .column-title { cursor: pointer; }
+        body.admin-mode .column-title:hover { color: var(--primary-color); }
         .column-rename-input {
-            font-family: 'Poppins', sans-serif;
-            font-size: 1.3em;
-            font-weight: 700;
-            color: var(--primary-dark);
-            border: 2px solid var(--primary-color);
-            border-radius: 8px;
-            padding: 4px 10px;
-            text-align: center;
-            outline: none;
-            flex: 1;
-            display: none;
+            font-family: 'Poppins', sans-serif; font-size: 1.2em; font-weight: 700;
+            color: var(--primary-dark); border: 2px solid var(--primary-color); border-radius: 8px;
+            padding: 4px 10px; text-align: center; outline: none; flex: 1; display: none;
+            width: calc(100% - 30px);
         }
+        .column-rename-input.active { display: block; }
 
-        .column-rename-input.active {
-            display: block;
+        .column-actions { display: none; position: absolute; right: 0; top: 0; flex-direction: column; gap: 3px; }
+        body.admin-mode .column-actions { display: flex; }
+        .col-btn { border: none; border-radius: 6px; width: 26px; height: 26px; font-size: .78em; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .15s, filter .15s; }
+        .col-btn:hover { transform: scale(1.15); filter: brightness(.85); }
+        .col-rename-btn { background: var(--primary-color); color: white; }
+        .col-delete-btn { background: var(--danger-color); color: white; }
+        .col-hint { font-size: .7em; color: var(--primary-color); opacity: .7; display: none; margin-bottom: 4px; }
+        body.admin-mode .col-hint { display: block; }
+
+        /* CARDS */
+        .championships-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; width: 100%; margin-top: 14px; min-height: 160px; flex-grow: 1; }
+        .championship-card {
+            background: var(--white-bg); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 18px; width: 200px; box-shadow: 0 4px 12px var(--shadow-light);
+            transition: all .25s; text-decoration: none; color: inherit;
+            display: flex; flex-direction: column; align-items: center; position: relative; cursor: grab;
         }
-
-        .column-actions {
-            display: none;
-            flex-direction: column;
-            gap: 4px;
-            position: absolute;
-            right: 0;
-            top: 0;
+        .championship-card.dragging { opacity: .65; border: 2px dashed var(--primary-color); transform: scale(.97); }
+        .championship-card:hover { transform: translateY(-7px); box-shadow: 0 10px 22px var(--shadow-medium); border-color: var(--primary-color); }
+        .championship-card img { max-width: 100%; height: 110px; object-fit: contain; border-radius: 8px; margin-bottom: 12px; background: #f8f8f8; padding: 6px; border: 1px solid #eee; }
+        .championship-card h3 { font-size: 1.05em; margin: 0; color: var(--dark-text); text-align: center; min-height: 2.6em; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; font-weight: 500; }
+        .delete-card-btn {
+            background: var(--danger-color); color: white; border: none; border-radius: 50%;
+            width: 28px; height: 28px; font-size: 1.1em; font-weight: 700; cursor: pointer;
+            position: absolute; top: 8px; right: 8px; display: none;
+            align-items: center; justify-content: center; transition: background .2s, transform .2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,.25); line-height: 1;
         }
+        .delete-card-btn:hover { background: var(--danger-dark); transform: scale(1.15); }
+        body.admin-mode .delete-card-btn { display: flex; }
 
-        body.admin-mode .column-actions {
-            display: flex;
-        }
-
-        .column-action-btn {
-            border: none;
-            border-radius: 6px;
-            width: 26px;
-            height: 26px;
-            font-size: 0.85em;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-            font-weight: 700;
-        }
-
-        .column-rename-btn {
-            background-color: var(--primary-color);
-            color: white;
-        }
-
-        .column-rename-btn:hover {
-            background-color: var(--primary-dark);
-            transform: scale(1.1);
-        }
-
-        .column-delete-btn {
-            background-color: var(--danger-color);
-            color: white;
-        }
-
-        .column-delete-btn:hover {
-            background-color: var(--danger-dark);
-            transform: scale(1.1);
-        }
-
-        .column-rename-hint {
-            font-size: 0.72em;
-            color: var(--primary-color);
-            display: none;
-            margin-top: -8px;
-            margin-bottom: 4px;
-            opacity: 0.8;
-        }
-
-        body.admin-mode .column-rename-hint {
-            display: block;
-        }
-
-        /* --- Botão de Excluir (Visível apenas no modo admin) --- */
-        .delete-btn {
-            background-color: var(--danger-color);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 32px; /* Ligeiramente maior */
-            height: 32px;
-            font-size: 1.3em;
-            line-height: 1;
-            cursor: pointer;
-            position: absolute;
-            top: 10px; /* Ajustado */
-            right: 10px; /* Ajustado */
-            display: none;
-            align-items: center;
-            justify-content: center;
-            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.25);
-        }
-
-
-        .delete-btn:hover {
-            background-color: var(--danger-dark);
-            transform: scale(1.15);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.35);
-        }
-
-
-        body.admin-mode .delete-btn {
-            display: flex;
-        }
-
-
-        /* --- Responsividade --- */
-        @media (max-width: 1200px) {
-            .columns-container {
-                max-width: 1100px;
-                padding: 25px;
-                gap: 25px;
-            }
-            .column {
-                min-width: 270px;
-                max-width: 380px;
-            }
-            .championship-card {
-                width: 180px;
-            }
-        }
-
-
-        @media (max-width: 992px) {
-            header h1 {
-                font-size: 2em;
-            }
-            #adminModeToggle {
-                padding: 10px 20px;
-                font-size: 1em;
-            }
-            .admin-section {
-                padding: 30px;
-                margin: 30px auto;
-                max-width: 650px;
-            }
-            .columns-container {
-                padding: 20px;
-                gap: 20px;
-            }
-            .column {
-                min-width: 240px;
-                max-width: 340px;
-            }
-            .championship-card {
-                width: 160px;
-            }
-            .championship-card img {
-                height: 100px;
-            }
-        }
-
-
-        @media (max-width: 768px) {
-            header {
-                flex-direction: column;
-                align-items: flex-start;
-                padding: 15px;
-            }
-            header h1 {
-                margin-bottom: 15px;
-                font-size: 1.8em;
-            }
-            #adminModeToggle {
-                position: static;
-                transform: none;
-                margin-top: 10px;
-                width: 100%; /* Ocupa largura total em telas menores */
-                justify-content: center; /* Centraliza o texto e ícone */
-            }
-            h2 {
-                font-size: 1.7em;
-            }
-            .admin-section {
-                margin: 20px;
-                padding: 25px;
-            }
-            .form-container input[type="text"],
-            .form-container select,
-            .add-column-container input[type="text"],
-            .form-container input[type="email"] {
-                width: calc(100% - 24px);
-            }
-            .form-container button, .add-column-container button {
-                width: 100%;
-                margin-right: 0;
-                margin-bottom: 15px; /* Espaçamento entre botões */
-            }
-            .columns-container {
-                flex-direction: column;
-                align-items: center;
-                padding: 15px;
-                gap: 25px;
-            }
-            .column {
-                width: 90%;
-                min-width: unset;
-                max-width: 90%;
-                padding: 20px;
-            }
-            .championships-list {
-                justify-content: space-around;
-            }
-            .championship-card {
-                width: 48%; /* Duas colunas de cards por linha na lista */
-                max-width: 200px;
-                padding: 15px;
-            }
-            .championship-card img {
-                height: 90px;
-                margin-bottom: 10px;
-            }
-            .delete-btn {
-                width: 28px;
-                height: 28px;
-                font-size: 1.1em;
-            }
-        }
-
-
-        @media (max-width: 480px) {
-            header h1 {
-                font-size: 1.6em;
-            }
-            .admin-section {
-                margin: 15px;
-                padding: 20px;
-            }
-            h2 {
-                font-size: 1.5em;
-                margin-bottom: 20px;
-                padding-bottom: 8px;
-            }
-            .form-container input[type="text"],
-            .form-container select,
-            .add-column-container input[type="text"],
-            .form-container input[type="email"] {
-                padding: 12px;
-                margin-bottom: 18px;
-            }
-            .form-container button, .add-column-container button {
-                padding: 12px 20px;
-                font-size: 1em;
-                margin-bottom: 10px;
-            }
-            .columns-container {
-                padding: 10px;
-                gap: 20px;
-            }
-            .column {
-                width: 95%;
-                padding: 15px;
-            }
-            .championship-card {
-                width: 100%; /* Um card por linha em telas muito pequenas */
-                max-width: 240px;
-                margin: 0 auto; /* Centraliza o card */
-            }
-            .championship-card img {
-                height: 80px;
-            }
-        }
+        /* RESPONSIVO */
+        @media(max-width:992px){ header h1{font-size:1.9em} .columns-container{padding:20px;gap:20px} .column{min-width:240px;max-width:340px} .championship-card{width:165px} }
+        @media(max-width:768px){ header{padding:14px 20px} header h1{font-size:1.6em} .columns-container{flex-direction:column;align-items:center;padding:15px;gap:20px} .column{width:90%;min-width:unset;max-width:90%} .championship-card{width:46%;max-width:200px} }
+        @media(max-width:480px){ header h1{font-size:1.4em} .admin-section{margin:15px;padding:20px} .championship-card{width:100%;max-width:240px;margin:0 auto} }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Campeonatos de Futebol</h1>
-    </header>
 
-    <!-- Botão admin invisível no canto inferior direito -->
-    <button id="adminModeToggle" title=""></button>
-    <div id="adminStatusDot" title="Modo Admin ativo"></div>
+<header><h1>⚽ Campeonatos de Futebol</h1></header>
 
+<!-- Gatilho admin oculto -->
+<button id="adminTrigger" title=""></button>
+<div id="adminDot"></div>
+<div id="syncStatus"><div id="syncDot"></div><span id="syncText">Aguardando...</span></div>
 
-    <div id="adminLoginForm" class="admin-section">
-        <h2>Modo Administrador</h2>
-        <p>Preencha seus dados para gerenciar os campeonatos. Seus dados serão registrados para fins de auditoria.</p>
-        <label for="adminName">Seu Nome:</label>
-        <input type="text" id="adminName" placeholder="Seu nome completo" required>
+<!-- LOGIN ADMIN -->
+<div id="adminLoginForm" class="admin-section">
+    <h2>🔐 Modo Administrador</h2>
+    <p>Preencha seus dados para gerenciar os campeonatos. Os dados serão registrados para auditoria.</p>
+    <label for="adminName">Nome completo:</label>
+    <input type="text" id="adminName" placeholder="Seu nome completo">
+    <label for="adminPhone">Telefone:</label>
+    <input type="text" id="adminPhone" placeholder="(XX) XXXXX-XXXX">
+    <label for="adminEmail">E-mail:</label>
+    <input type="email" id="adminEmail" placeholder="seu@email.com">
+    <div id="loginMessage" class="form-message"></div>
+    <button class="btn btn-primary" onclick="enterAdminMode()">🚀 Entrar no Modo Admin</button>
+</div>
 
+<!-- ADICIONAR CAMPEONATO -->
+<div id="addChampionshipSection" class="admin-section">
+    <h2>➕ Adicionar Campeonato</h2>
+    <label for="championshipName">Nome do Campeonato:</label>
+    <input type="text" id="championshipName" placeholder="Ex: Copa do Mundo">
+    <label for="imageLink">URL da Imagem:</label>
+    <input type="text" id="imageLink" placeholder="https://...">
+    <label for="championshipLink">URL do Campeonato:</label>
+    <input type="text" id="championshipLink" placeholder="https://...">
+    <label for="columnSelect">Coluna de destino:</label>
+    <select id="columnSelect"></select>
+    <div id="addChampMessage" class="form-message"></div>
+    <button class="btn btn-success" onclick="addChampionship()">✅ Adicionar</button>
+</div>
 
-        <label for="adminPhone">Seu Telefone:</label>
-        <input type="text" id="adminPhone" placeholder="Ex: (XX) XXXXX-XXXX" required>
+<!-- ADICIONAR COLUNA -->
+<div id="addColumnSection" class="admin-section">
+    <h2>📂 Nova Coluna</h2>
+    <label for="newColumnName">Nome da Coluna:</label>
+    <input type="text" id="newColumnName" placeholder="Ex: Campeonatos Estaduais">
+    <div id="addColumnMessage" class="form-message"></div>
+    <button class="btn btn-primary" onclick="addColumn()">🗂️ Criar Coluna</button>
+</div>
 
+<!-- GRID -->
+<div class="columns-container" id="columnsContainer"></div>
 
-        <label for="adminEmail">Seu E-mail:</label>
-        <input type="email" id="adminEmail" placeholder="seu.email@exemplo.com" required>
+<!-- BOTÃO SAIR DO ADMIN -->
+<button id="exitAdminBtn" onclick="exitAdminMode()">🚪 Sair do Modo Admin</button>
 
-        <div id="loginMessage" class="form-message"></div>
+<script>
+// ================================================================
+//  CONFIGURAÇÃO — cole aqui a URL do seu Web App do Apps Script
+// ================================================================
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzbsstKFIxJtAzCd61RicnIPxMG1gEKCTp9ViXxCfa9ZL8b3UPw2J0pSnVOawI5njpD/exec';
 
-        <button onclick="enterAdminMode()">Entrar no Modo Admin</button>
-    </div>
+// ================================================================
+//  DADOS PADRÃO
+// ================================================================
+let data = {
+    columns: {
+        "brasileiros": {
+            name: "Campeonatos Brasileiros",
+            championships: [
+                { id: 1001, name: "Brasileirão Série A", image: "https://p2.trrsf.com/image/fget/cf/1200/1200/middle/images.terra.com/2023/02/18/919177108-brasileirao-a.jpg", link: "https://www.google.com/search?q=Brasileirão+Série+A" },
+                { id: 1002, name: "Brasileirão Série B", image: "https://upload.wikimedia.org/wikipedia/pt/f/f4/Campeonato_Brasileiro_S%C3%A9rie_B_logo.png", link: "https://www.google.com/search?q=Brasileirão+Série+B" },
+                { id: 1003, name: "Brasileirão Série C", image: "https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2024/06/brasileiro-serie-c.jpg", link: "https://www.google.com/search?q=Brasileirão+Série+C" },
+                { id: 1004, name: "Brasileirão Série D", image: "https://upload.wikimedia.org/wikipedia/pt/thumb/e/e6/Campeonato_Brasileiro_de_Futebol_de_2022_-_S%C3%A9rie_D.png/250px-Campeonato_Brasileiro_de_Futebol_de_2022_-_S%C3%A9rie_D.png", link: "https://www.google.com/search?q=Brasileirão+Série+D" }
+            ]
+        },
+        "mundiais": {
+            name: "Campeonatos Mundiais",
+            championships: []
+        }
+    },
+    adminInfo: { name: "", phone: "", email: "" }
+};
 
+let isAdminMode = false;
+let draggedItem = null;
+let syncTimeout = null;
 
-    <div id="addChampionshipSection" class="admin-section">
-        <h2>Adicionar Novo Campeonato</h2>
-        <label for="championshipName">Nome do Campeonato:</label>
-        <input type="text" id="championshipName" placeholder="Ex: Brasileirão Série A" required>
+// ================================================================
+//  ELEMENTOS
+// ================================================================
+const columnsContainer = document.getElementById('columnsContainer');
+const columnSelect     = document.getElementById('columnSelect');
+const adminLoginForm   = document.getElementById('adminLoginForm');
+const addChampSection  = document.getElementById('addChampionshipSection');
+const addColumnSection = document.getElementById('addColumnSection');
+const loginMessage     = document.getElementById('loginMessage');
+const addChampMessage  = document.getElementById('addChampMessage');
+const addColumnMessage = document.getElementById('addColumnMessage');
 
+// ================================================================
+//  ARMAZENAMENTO LOCAL
+// ================================================================
+function loadLocal() {
+    try {
+        const saved = localStorage.getItem('campeonatosData_v3');
+        if (!saved) return;
+        const parsed = JSON.parse(saved);
+        if (!parsed || !parsed.columns) return;
+        // Sanitiza estrutura
+        for (const k in parsed.columns) {
+            if (!parsed.columns[k].championships) parsed.columns[k].championships = [];
+            // Garante ID numérico único em todos
+            parsed.columns[k].championships = parsed.columns[k].championships.map((c, i) => ({
+                ...c, id: Number(c.id) || (Date.now() + i)
+            }));
+        }
+        data = parsed;
+    } catch(e) { console.warn('loadLocal erro:', e); }
+}
 
-        <label for="imageLink">Link da Imagem (URL):</label>
-        <input type="text" id="imageLink" placeholder="Ex: https://example.com/logo.png" required>
+function saveLocal() {
+    localStorage.setItem('campeonatosData_v3', JSON.stringify(data));
+}
 
+// ================================================================
+//  SINCRONIZAÇÃO BIDIRECIONAL COM GOOGLE SHEETS
+// ================================================================
+function setSyncStatus(state, text) {
+    document.getElementById('syncStatus').className = state;
+    document.getElementById('syncText').textContent = text;
+}
 
-        <label for="championshipLink">Link do Campeonato (URL):</label>
-        <input type="text" id="championshipLink" placeholder="Ex: https://www.google.com/search?q=..." required>
+function scheduleSave() {
+    saveLocal();
+    clearTimeout(syncTimeout);
+    syncTimeout = setTimeout(pushToSheets, 1500);
+}
 
+async function pushToSheets() {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_')) return;
+    setSyncStatus('syncing', 'Salvando no Sheets...');
+    try {
+        await fetch(APPS_SCRIPT_URL, {
+            method: 'POST', mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action: 'saveAll', payload: data })
+        });
+        setSyncStatus('synced', 'Salvo ✓ ' + new Date().toLocaleTimeString('pt-BR'));
+    } catch(e) {
+        setSyncStatus('error', 'Erro ao salvar no Sheets');
+    }
+}
 
-        <label for="columnSelect">Adicionar à Coluna:</label>
-        <select id="columnSelect"></select>
-
-        <div id="addChampMessage" class="form-message"></div>
-
-        <button onclick="addChampionship()">Adicionar Campeonato</button>
-    </div>
-
-
-    <div id="addColumnSection" class="admin-section">
-        <h2>Adicionar Nova Coluna</h2>
-        <label for="newColumnName">Nome da Nova Coluna:</label>
-        <input type="text" id="newColumnName" placeholder="Ex: Campeonatos Estaduais">
-        
-        <div id="addColumnMessage" class="form-message"></div>
-
-        <button onclick="addColumn()">Criar Coluna</button>
-    </div>
-
-
-    <div class="columns-container" id="columnsContainer">
-        </div>
-
-
-    <script>
-        const columnsContainer = document.getElementById('columnsContainer');
-        const columnSelect = document.getElementById('columnSelect');
-        const adminModeToggle = document.getElementById('adminModeToggle');
-        const adminLoginForm = document.getElementById('adminLoginForm');
-        const addChampionshipSection = document.getElementById('addChampionshipSection');
-        const addColumnSection = document.getElementById('addColumnSection');
-
-        // Mensagens de feedback
-        const loginMessage = document.getElementById('loginMessage');
-        const addChampMessage = document.getElementById('addChampMessage');
-        const addColumnMessage = document.getElementById('addColumnMessage');
-
-
-        // URL do seu script do Google Apps Script
-        // Lembre-se de substituir 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' pela sua URL real!
-        const GOOGLE_APPS_SCRIPT_URL = 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE';
-
-
-        let data = {
-            columns: {
-                "brasileiros": {
-                    name: "Campeonatos Brasileiros",
-                    championships: [
-                        { id: Date.now() + 1, name: "Brasileirão Série A", image: "https://p2.trrsf.com/image/fget/cf/1200/1200/middle/images.terra.com/2023/02/18/919177108-brasileirao-a.jpg", link: "https://www.google.com/search?client=firefox-b-d&sca_esv=dcff718841928c00&sxsrf=AE3TifPlogMyp4ovc0wcW_bqASoEDU0vuQ:1750267959590&q=Brasileir%C3%A3o+S%C3%A9rie+A&sa=X&ved=2ahUKEwit4_ifwPuNAxXmPbkGHcCEHNgQ1QJ6BQiWARAB&biw=1920&bih=919&dpr=1#wptab=si:AMgyJEsv3PmLaKFqbPTQ9CSol7BvG13LDiFVNQjxDtWGc_GjI5YJ0LJQxzO5oEHS-IrjIUbh06oLTuUMusm4FjL3m9-tDR0HfqWDE3Ume4J3B8FhsPsPrv21I9DR2czsuRZcL--GQF4QSs6QaFBJqBO0J5iUKhALCD8sUA-H-11heAu74ye-Z7IUFNCnxDPVjhPhuLidl5FrnEozl7xMvMns7ROyRjiLQ%3D%3D" },
-                        { id: Date.now() + 2, name: "Brasileirão Série B", image: "https://upload.wikimedia.org/wikipedia/pt/f/f4/Campeonato_Brasileiro_S%C3%A9rie_B_logo.png", link: "https://www.google.com/search?q=classifica%C3%A7%C3%B5es+de+brasileir%C3%A3o+s%C3%A9rie+b&client=firefox-b-d&sca_esv=dcff718841928c00&biw=1920&bih=919&sxsrf=AE3TifP92VPT8ph0tUolfwjkgCdsgJUJeQ%3A1750267970566&ei=QvhSaMWtIqfE5OUP8OCh8QE&ved=0ahUKEwjF1palwPuNAxUnIrkGHXBwKB4Q4dUDCBA&uact=5&oq=classifica%C3%A7%C3%B5es+de+brasileir%C3%A3o+s%C3%A9rie+b&gs_lp=Egxnd3Mtd2l6LXNlcnAiKWNsYXNzaWZpY2HDp8O1ZXMgZGUgYnJhc2lsZWlyw6NvIHPDqXJpZSBibwoQIxiABBgnGIoFMgoQABiABBhDGIoFMggQABiABBixAzIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIth5QlhRY1xVwAHgBkAEAmAGvAaAB7QOqAQMwLjO4AQPIAQD4AQGYAgOgAp0EwgINEAAYgAQYsQMYQxiKBZgDAJIHAzAuM6AHqBuyBwMwLjO4B50EwgcHMi0yLjAuMcgHKg&sclient=gws-wiz-serp" },
-                        { id: Date.now() + 3, name: "Brasileirão Série C", image: "https://admin.cnnbrasil.com.br/wp-content/uploads/sites/12/2024/06/brasileiro-serie-c.jpg?w=1200&h=900&crop=1", link: "https://www.google.com/search?q=classifica%C3%A7%C3%B5es+de+brasileir%C3%A3o+s%C3%A9rie+c&client=firefox-b-d&sca_esv=dcff718841928c00&biw=1920&bih=919&sxsrf=AE3TifMoA_BZ_mnqHSpSFleX9RVXF5oAiw%3A1750269116135&ei=vPxSaJ2KCNKz5OUPg9HU0QM&ved=0ahUKEwid2LbHxPuNAxXSGbkGHYMoNToQ4dUDCBA&uact=5&oq=classifica%C3%A7%C3%B5es+de+brasileir%C3%A3o+s%C3%A9rie+c&gs_lp=Egxnd3Mtd2l6LXNlcnAiKWNsYXNzaWZpY2HDp8O1ZXMgZGUgYnJhc2lsZWlyw6NvIHPDqXJpZSBjMgoQIxiABBgnGIoFMgoQABiABBgUGIcCMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIlRBQ3QpYmQxwAXgAkAEAmAGVAqAB3gSqAQUwLjIuMbgBA8gBAPgBAZgCA6ACgwPCAgoQABiwAxjWBBhHwgINEAAYgAQYsAMYQxiKBcICExAuIAEGLADGEMYyAMYigXYAQHCAhYQLhiABBiwAxhDGNQCGMgDGIoF2AEBwgIIEAAYgAQYsQPCAg0QABiABBixAxgUGIcCwgIKEAAYgAQYQxiKBZgDAIgGAZAGFLoGBggBEAEYCJIHAzEuMqAHjjOyBwMwLjK4B-QCwgcFMy0yLjHIBzE&sclient=gws-wiz-serp" },
-                        { id: Date.now() + 4, name: "Brasileirão Série D", image: "https://upload.wikimedia.org/wikipedia/pt/thumb/e/e6/Campeonato_Brasileiro_de_Futebol_de_2022_-_S%C3%A9rie_D.png/250px-Campeonato_Brasileiro_de_Futebol_de_2022_-_S%C3%A9rie_D.png", link: "https://www.google.com/search?q=classifica%C3%A7%C3%B5es+de+brasileir%C3%A3o+s%C3%A9rie+d&client=firefox-b-d&sca_esv=dcff718841928c00&biw=1920&bih=919&sxsrf=AE3TifMptF8k3b9lq1hPbhhi1QSTzg_ufw%3A1750269293115&ei=bf1SaLnlBp6v5OUPq7nnuQk&ved=0ahUKEwj5z-ibxfuNAxWeF7kGHavcOZcQ4dUDCBA&uact=5&oq=classifica%C3%A7%C3%B5es+de+brasileir%C3%A3o+s%C3%A9rie+d&gs_lp=Egxnd3Mtd2l6LXNlcnAiKWNsYXNzaWZpY2HDp8O1ZXMgZGUgYnJhc2lsZWlyw6NvIHPDqXJpZSBkMgoQIxiABBgnGIoFMg0QABiABBixAxgUGIcCMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgAQyBRAAGIAEMgUQABiABDIFEAAYgARIlRBQvQZYxQdwAXgAkAEAmAHCAaABlwSqAQMwLjO4AQPIAQD4AQGYAgOgAogDwgIKEAAYsAMY1gQYR8ICDRAAGIAEGLADGEMYigXCAhMQLhiABBiwAxhDGMgDGIoF2AEBwgIWEC4YgAQYsAMYQxjUAhjIAxiKBdgBAcICDRAAGIAEGLEDGEMYigXCAgoQABiABBhDGIoFwgIIEAAYgAQYsQOYAwCIBgGQBhS6BgYIARABGAiSBwMxLjKgB8QysgcDMC4yuAfmAsIHBzItMS4xLjHIBy0&sclient=gws-wiz-serp" }
-                    ]
-                },
-                "mundiais": {
-                    name: "Campeonatos Mundiais",
-                    championships: []
-                }
-            },
-            adminInfo: {
-                name: "",
-                phone: "",
-                email: ""
+async function pullFromSheets() {
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes('YOUR_')) {
+        setSyncStatus('error', 'URL do Apps Script não configurada');
+        return false;
+    }
+    setSyncStatus('syncing', 'Carregando do Sheets...');
+    try {
+        const resp = await fetch(APPS_SCRIPT_URL + '?action=getAll');
+        const json = await resp.json();
+        if (json && json.columns && Object.keys(json.columns).length > 0) {
+            // Sanitiza antes de aplicar
+            for (const k in json.columns) {
+                if (!json.columns[k].championships) json.columns[k].championships = [];
+                json.columns[k].championships = json.columns[k].championships.map((c, i) => ({
+                    ...c, id: Number(c.id) || (Date.now() + i)
+                }));
             }
-        };
+            data = json;
+            saveLocal();
+            setSyncStatus('synced', 'Sincronizado ✓ ' + new Date().toLocaleTimeString('pt-BR'));
+            return true;
+        }
+        setSyncStatus('synced', 'Dados locais (Sheets vazio)');
+        return false;
+    } catch(e) {
+        setSyncStatus('error', 'Falha ao carregar do Sheets');
+        return false;
+    }
+}
 
+// ================================================================
+//  RENDERIZAÇÃO
+// ================================================================
+function renderColumns() {
+    columnsContainer.innerHTML = '';
+    columnSelect.innerHTML = '<option value="">Selecione uma coluna</option>';
 
-        let isAdminMode = false;
-        let draggedItem = null;
+    for (const key in data.columns) {
+        if (!Object.prototype.hasOwnProperty.call(data.columns, key)) continue;
+        const col = data.columns[key];
 
+        // Option no select
+        const opt = document.createElement('option');
+        opt.value = key; opt.textContent = col.name;
+        columnSelect.appendChild(opt);
 
-        // --- Funções de Manipulação de Dados (localStorage) ---
-        function loadData() {
-            const savedData = localStorage.getItem('championshipsData');
-            if (savedData) {
-                const loadedData = JSON.parse(savedData);
-                if (loadedData.columns) {
-                    for (const colKey in loadedData.columns) {
-                        if (loadedData.columns[colKey].championships) {
-                            loadedData.columns[colKey].championships = loadedData.columns[colKey].championships.map(champ => {
-                                if (!champ.id) {
-                                    champ.id = Date.now() + Math.random(); // Garante IDs únicos
-                                }
-                                return champ;
-                            });
-                        }
-                    }
-                }
-                data = loadedData;
-            }
+        // Wrapper da coluna
+        const colDiv = document.createElement('div');
+        colDiv.classList.add('column');
+        colDiv.id = 'column-' + key;
+        colDiv.addEventListener('dragover', dragOver);
+        colDiv.addEventListener('dragleave', dragLeave);
+        colDiv.addEventListener('drop', drop);
+
+        // -- CABEÇALHO --
+        const colHeader = document.createElement('div');
+        colHeader.classList.add('column-header');
+
+        const colTitle = document.createElement('h3');
+        colTitle.classList.add('column-title');
+        colTitle.textContent = col.name;
+
+        const renameInput = document.createElement('input');
+        renameInput.type = 'text';
+        renameInput.classList.add('column-rename-input');
+        renameInput.value = col.name;
+
+        const colActions = document.createElement('div');
+        colActions.classList.add('column-actions');
+
+        const renameBtn = document.createElement('button');
+        renameBtn.classList.add('col-btn', 'col-rename-btn');
+        renameBtn.innerHTML = '✏️'; renameBtn.title = 'Renomear coluna';
+
+        const deleteColBtn = document.createElement('button');
+        deleteColBtn.classList.add('col-btn', 'col-delete-btn');
+        deleteColBtn.innerHTML = '🗑️'; deleteColBtn.title = 'Excluir esta coluna';
+
+        colActions.appendChild(renameBtn);
+        colActions.appendChild(deleteColBtn);
+
+        colHeader.appendChild(colTitle);
+        colHeader.appendChild(renameInput);
+        colHeader.appendChild(colActions);
+
+        const hint = document.createElement('span');
+        hint.classList.add('col-hint');
+        hint.textContent = '✏ clique no título para renomear';
+
+        // Funções de renomear
+        function activateRename() {
+            if (!isAdminMode) return;
+            renameInput.value = data.columns[key].name;
+            colTitle.style.display = 'none';
+            renameInput.classList.add('active');
+            setTimeout(() => { renameInput.focus(); renameInput.select(); }, 10);
         }
 
-
-        function saveData() {
-            localStorage.setItem('championshipsData', JSON.stringify(data));
-        }
-
-        // --- Funções de Feedback de Mensagem ---
-        function showMessage(element, message, type) {
-            element.textContent = message;
-            element.className = `form-message ${type}`; // Adiciona tipo (success/error)
-            setTimeout(() => {
-                element.className = 'form-message'; // Oculta a mensagem após 3 segundos
-                element.textContent = '';
-            }, 3000);
-        }
-
-        // --- Funções de Renderização da Interface ---
-        function renderColumns() {
-            columnsContainer.innerHTML = '';
-            columnSelect.innerHTML = '<option value="">Selecione uma coluna</option>'; // Opção padrão
-
-            // Renderiza as opções do select para adicionar campeonato
-            for (const key in data.columns) {
-                if (data.columns.hasOwnProperty(key)) {
-                    const column = data.columns[key];
-                    const option = document.createElement('option');
-                    option.value = key;
-                    option.textContent = column.name;
-                    columnSelect.appendChild(option);
-                }
-            }
-
-            // Renderiza as colunas e seus campeonatos
-            for (const key in data.columns) {
-                if (data.columns.hasOwnProperty(key)) {
-                    const column = data.columns[key];
-                    const columnDiv = document.createElement('div');
-                    columnDiv.classList.add('column');
-                    columnDiv.id = `column-${key}`;
-
-
-                    columnDiv.addEventListener('dragover', dragOver);
-                    columnDiv.addEventListener('dragleave', dragLeave);
-                    columnDiv.addEventListener('drop', drop);
-
-
-                    // Container do cabeçalho da coluna
-                    const columnHeader = document.createElement('div');
-                    columnHeader.classList.add('column-header');
-
-                    const columnTitle = document.createElement('h2');
-                    columnTitle.textContent = column.name;
-                    columnTitle.title = 'Clique para renomear (modo admin)';
-
-                    const renameInput = document.createElement('input');
-                    renameInput.type = 'text';
-                    renameInput.classList.add('column-rename-input');
-                    renameInput.value = column.name;
-
-                    const columnActions = document.createElement('div');
-                    columnActions.classList.add('column-actions');
-
-                    const renameBtn = document.createElement('button');
-                    renameBtn.classList.add('column-action-btn', 'column-rename-btn');
-                    renameBtn.innerHTML = '✏️';
-                    renameBtn.title = 'Renomear coluna';
-
-                    const deleteColBtn = document.createElement('button');
-                    deleteColBtn.classList.add('column-action-btn', 'column-delete-btn');
-                    deleteColBtn.innerHTML = '🗑️';
-                    deleteColBtn.title = 'Excluir coluna';
-
-                    columnActions.appendChild(renameBtn);
-                    columnActions.appendChild(deleteColBtn);
-
-                    // Hint de clique para renomear
-                    const renameHint = document.createElement('span');
-                    renameHint.classList.add('column-rename-hint');
-                    renameHint.textContent = '✏ clique para renomear';
-
-                    // Lógica de renomear pelo botão ou clique no título
-                    function activateRename() {
-                        if (!isAdminMode) return;
-                        renameInput.value = column.name;
-                        columnTitle.style.display = 'none';
-                        renameInput.classList.add('active');
-                        renameInput.focus();
-                        renameInput.select();
-                    }
-
-                    function confirmRename() {
-                        const newName = renameInput.value.trim();
-                        if (newName && newName !== column.name) {
-                            column.name = newName;
-                            columnTitle.textContent = newName;
-                            saveData();
-                            renderColumns(); // re-renderiza para atualizar select
-                            return;
-                        }
-                        columnTitle.style.display = '';
-                        renameInput.classList.remove('active');
-                    }
-
-                    renameBtn.addEventListener('click', activateRename);
-                    columnTitle.addEventListener('click', activateRename);
-
-                    renameInput.addEventListener('blur', confirmRename);
-                    renameInput.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') confirmRename();
-                        if (e.key === 'Escape') {
-                            columnTitle.style.display = '';
-                            renameInput.classList.remove('active');
-                        }
-                    });
-
-                    // Lógica de excluir coluna
-                    deleteColBtn.addEventListener('click', () => {
-                        if (!isAdminMode) return;
-                        const champCount = column.championships.length;
-                        const confirmMsg = champCount > 0
-                            ? `Tem certeza que deseja excluir a coluna "${column.name}"?\nEla contém ${champCount} campeonato(s) que também serão excluídos!`
-                            : `Tem certeza que deseja excluir a coluna "${column.name}"?`;
-                        if (confirm(confirmMsg)) {
-                            delete data.columns[key];
-                            saveData();
-                            renderColumns();
-                        }
-                    });
-
-                    columnHeader.appendChild(columnTitle);
-                    columnHeader.appendChild(renameInput);
-                    columnHeader.appendChild(columnActions);
-                    columnDiv.appendChild(columnHeader);
-                    columnDiv.appendChild(renameHint);
-
-
-                    const championshipsListDiv = document.createElement('div');
-                    championshipsListDiv.classList.add('championships-list');
-                    championshipsListDiv.id = `championships-list-${key}`;
-                    columnDiv.appendChild(championshipsListDiv);
-
-
-                    columnsContainer.appendChild(columnDiv);
-
-
-                    renderChampionships(key);
-                }
+        function confirmRename() {
+            const newName = renameInput.value.trim();
+            colTitle.style.display = '';
+            renameInput.classList.remove('active');
+            if (newName && newName !== data.columns[key].name) {
+                data.columns[key].name = newName;
+                scheduleSave();
+                renderColumns();
             }
         }
 
+        renameBtn.addEventListener('click', e => { e.stopPropagation(); activateRename(); });
+        colTitle.addEventListener('click', activateRename);
+        renameInput.addEventListener('blur', confirmRename);
+        renameInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); confirmRename(); }
+            if (e.key === 'Escape') { colTitle.style.display = ''; renameInput.classList.remove('active'); }
+        });
 
-        function renderChampionships(columnKey) {
-            const listContainer = document.getElementById(`championships-list-${columnKey}`);
-            if (!listContainer) return;
-
-
-            listContainer.innerHTML = '';
-
-
-            data.columns[columnKey].championships.forEach((champ) => {
-                const cardLink = document.createElement('a');
-                cardLink.href = champ.link;
-                cardLink.target = "_blank";
-                cardLink.classList.add('championship-card');
-                cardLink.draggable = true;
-                cardLink.dataset.id = champ.id;
-                cardLink.dataset.column = columnKey;
-
-
-                cardLink.addEventListener('dragstart', dragStart);
-
-
-                const champImage = document.createElement('img');
-                champImage.src = champ.image;
-                champImage.alt = champ.name;
-                champImage.onerror = function() {
-                    this.src = 'https://via.placeholder.com/120x120?text=Sem+Imagem'; // Imagem de fallback
-                };
-                cardLink.appendChild(champImage);
-
-
-                const champName = document.createElement('h3');
-                champName.textContent = champ.name;
-                cardLink.appendChild(champName);
-
-
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('delete-btn');
-                deleteButton.textContent = 'X';
-                deleteButton.title = `Excluir ${champ.name}`;
-                deleteButton.onclick = (event) => {
-                    event.preventDefault();
-                    event.stopPropagation();
-                    deleteChampionship(columnKey, champ.id);
-                };
-                cardLink.appendChild(deleteButton);
-
-
-                listContainer.appendChild(cardLink);
-            });
-            updateAdminModeVisuals();
-        }
-
-
-        // --- Modo Admin ---
-        adminModeToggle.addEventListener('click', () => {
-            if (isAdminMode) {
-                exitAdminMode();
-            } else {
-                showAdminLogin();
+        // Excluir coluna
+        deleteColBtn.addEventListener('click', e => {
+            e.stopPropagation();
+            if (!isAdminMode) return;
+            // Captura o nome atual do objeto data (não da closure)
+            const currentCol = data.columns[key];
+            if (!currentCol) return;
+            const n = currentCol.championships.length;
+            const msg = n > 0
+                ? `Excluir a coluna "${currentCol.name}"?\nEla contém ${n} campeonato(s) que também serão removidos!`
+                : `Excluir a coluna "${currentCol.name}"?`;
+            if (confirm(msg)) {
+                delete data.columns[key];
+                scheduleSave();
+                renderColumns();
             }
         });
 
-
-        function showAdminLogin() {
-            // Oculta todas as seções admin antes de mostrar a de login
-            addChampionshipSection.classList.remove('active');
-            addColumnSection.classList.remove('active');
-            adminLoginForm.classList.add('active'); // Mostra apenas o formulário de login
-
-            adminModeToggle.classList.remove('active-admin');
-            document.body.classList.remove('admin-mode');
-            updateAdminModeVisuals();
-        }
-
-
-        async function enterAdminMode() {
-            const adminName = document.getElementById('adminName').value.trim();
-            const adminPhone = document.getElementById('adminPhone').value.trim();
-            const adminEmail = document.getElementById('adminEmail').value.trim();
-
-
-            if (!adminName || !adminPhone || !adminEmail) {
-                showMessage(loginMessage, 'Por favor, preencha todos os campos.', 'error');
-                return;
-            }
-
-            if (!validateEmail(adminEmail)) {
-                showMessage(loginMessage, 'Por favor, insira um e-mail válido.', 'error');
-                return;
-            }
-
-            data.adminInfo.name = adminName;
-            data.adminInfo.phone = adminPhone;
-            data.adminInfo.email = adminEmail;
-            saveData();
-
-
-            // Envia dados para o Google Sheets (se a URL estiver configurada)
-            const success = await sendAdminLoginToGoogleSheets(adminName, adminPhone, adminEmail);
-
-            if(success) {
-                isAdminMode = true;
-                adminModeToggle.classList.add('active-admin');
-                document.body.classList.add('admin-mode');
-
-                adminLoginForm.classList.remove('active');
-                addChampionshipSection.classList.add('active');
-                addColumnSection.classList.add('active');
-
-                updateAdminModeVisuals();
-                alert(`Bem-vindo, ${adminName}! Modo Admin ativado.`);
-            } else {
-                showMessage(loginMessage, 'Falha ao entrar no modo Admin. Tente novamente.', 'error');
-            }
-        }
-
-
-        function exitAdminMode() {
-            isAdminMode = false;
-            adminModeToggle.classList.remove('active-admin');
-            document.body.classList.remove('admin-mode');
-            
-
-            adminLoginForm.classList.remove('active');
-            addChampionshipSection.classList.remove('active');
-            addColumnSection.classList.remove('active');
-            
-
-            document.getElementById('adminName').value = '';
-            document.getElementById('adminPhone').value = '';
-            document.getElementById('adminEmail').value = '';
-            updateAdminModeVisuals();
-            alert('Modo Admin desativado.');
-        }
-
-
-        function updateAdminModeVisuals() {
-            const deleteButtons = document.querySelectorAll('.delete-btn');
-            deleteButtons.forEach(btn => {
-                btn.style.display = isAdminMode ? 'flex' : 'none';
-            });
-        }
-
-        function validateEmail(email) {
-            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-            return re.test(String(email).toLowerCase());
-        }
-
-
-        // Function to send data to Google Sheets
-        async function sendAdminLoginToGoogleSheets(name, phone, email) {
-            if (!GOOGLE_APPS_SCRIPT_URL || GOOGLE_APPS_SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                console.warn("URL do Google Apps Script não configurada. Os dados não serão enviados para o Google Sheets.");
-                showMessage(loginMessage, 'Aviso: URL do Apps Script não configurada. Dados não serão salvos.', 'error');
-                return true; // Permite entrar no modo admin mesmo sem o Apps Script
-            }
-
-
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('phone', phone);
-            formData.append('email', email);
-            formData.append('timestamp', new Date().toLocaleString('pt-BR')); // Adiciona timestamp
-
-            try {
-                const response = await fetch(GOOGLE_APPS_SCRIPT_URL, {
-                    method: 'POST',
-                    body: formData,
-                    mode: 'no-cors' // Necessário para CORS com Apps Script
-                });
-                // Como 'no-cors' não permite ler a resposta, assumimos sucesso se não houver erro de rede.
-                // Idealmente, você configuraria o CORS no Apps Script para obter um feedback real.
-                console.log('Tentativa de enviar dados de login do Admin para o Google Sheets.');
-                showMessage(loginMessage, 'Dados de login enviados. Bem-vindo!', 'success');
-                return true;
-            } catch (error) {
-                console.error('Erro de rede ou ao enviar dados para o Google Apps Script:', error);
-                showMessage(loginMessage, 'Erro ao conectar com o servidor. Tente novamente.', 'error');
-                return false;
-            }
-        }
-
-
-        // --- Funções de Ação (Adicionar/Excluir) ---
-        function addChampionship() {
-            const name = document.getElementById('championshipName').value.trim();
-            const image = document.getElementById('imageLink').value.trim();
-            const link = document.getElementById('championshipLink').value.trim();
-            const selectedColumnKey = columnSelect.value;
-
-
-            if (!name || !image || !link || !selectedColumnKey) {
-                showMessage(addChampMessage, 'Por favor, preencha todos os campos do campeonato!', 'error');
-                return;
-            }
-            if (selectedColumnKey === "") {
-                showMessage(addChampMessage, 'Por favor, selecione uma coluna.', 'error');
-                return;
-            }
-
-
-            const newChampionship = {
-                id: Date.now() + Math.random(),
-                name,
-                image,
-                link
-            };
-            data.columns[selectedColumnKey].championships.push(newChampionship);
-            saveData();
-            renderChampionships(selectedColumnKey);
-
-            showMessage(addChampMessage, `Campeonato "${name}" adicionado com sucesso!`, 'success');
-            document.getElementById('championshipName').value = '';
-            document.getElementById('imageLink').value = '';
-            document.getElementById('championshipLink').value = '';
-            columnSelect.value = ""; // Reseta o select
-        }
-
-
-        function deleteChampionship(columnKey, championshipId) {
-            if (!isAdminMode) {
-                alert('Você não está no modo administrador.');
-                return;
-            }
-
-
-            const column = data.columns[columnKey];
-            const champIndex = column.championships.findIndex(champ => champ.id === championshipId);
-
-
-            if (champIndex > -1) {
-                const champName = column.championships[champIndex].name;
-                if (confirm(`Tem certeza que deseja excluir "${champName}"?`)) {
-                    column.championships.splice(champIndex, 1);
-                    saveData();
-                    renderChampionships(columnKey);
-                    alert(`Campeonato "${champName}" excluído.`);
-                }
-            }
-        }
-
-
-        function addColumn() {
-            const newColumnName = document.getElementById('newColumnName').value.trim();
-
-
-            if (!newColumnName) {
-                showMessage(addColumnMessage, 'Por favor, digite um nome para a nova coluna!', 'error');
-                return;
-            }
-
-
-            const columnKey = newColumnName.toLowerCase().replace(/\s+/g, '-'); // Gera uma chave simples para o objeto
-            if (data.columns[columnKey]) {
-                showMessage(addColumnMessage, 'Já existe uma coluna com esse nome ou um nome similar. Por favor, escolha outro.', 'error');
-                return;
-            }
-
-
-            data.columns[columnKey] = {
-                name: newColumnName,
-                championships: []
-            };
-            saveData();
-            renderColumns(); // Re-renderiza todas as colunas e atualiza o select dropdown
-
-            showMessage(addColumnMessage, `Coluna "${newColumnName}" criada com sucesso!`, 'success');
-            document.getElementById('newColumnName').value = ''; // Limpa o campo de input
-        }
-
-
-        // --- Funções Drag and Drop ---
-        function dragStart(e) {
-            if (!isAdminMode) { // Permite arrastar apenas no modo admin
-                e.preventDefault();
-                return;
-            }
-            draggedItem = e.target;
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', draggedItem.dataset.id); // Define o ID do item arrastado
-            draggedItem.classList.add('dragging');
-        }
-
-
-        function dragOver(e) {
-            e.preventDefault(); // Necessário para permitir o drop
-            const columnDiv = e.target.closest('.column');
-            if (isAdminMode && columnDiv && draggedItem && columnDiv.id !== `column-${draggedItem.dataset.column}`) {
-                columnDiv.classList.add('drag-over');
-            }
-        }
-
-
-        function dragLeave(e) {
-            const columnDiv = e.target.closest('.column');
-            if (columnDiv) {
-                columnDiv.classList.remove('drag-over');
-            }
-        }
-
-
-        function drop(e) {
-            e.preventDefault();
-            const targetColumnDiv = e.target.closest('.column');
-            if (!isAdminMode || !targetColumnDiv || !draggedItem) {
-                if (targetColumnDiv) targetColumnDiv.classList.remove('drag-over');
-                if (draggedItem) draggedItem.classList.remove('dragging');
-                return;
-            }
-
-
-            targetColumnDiv.classList.remove('drag-over');
-
-
-            const draggedChampId = parseFloat(draggedItem.dataset.id);
-            const sourceColumnKey = draggedItem.dataset.column;
-            const targetColumnKey = targetColumnDiv.id.replace('column-', '');
-
-
-            if (sourceColumnKey === targetColumnKey) {
-                draggedItem.classList.remove('dragging'); // Remove dragging class even if not moved
-                return; // Soltou na mesma coluna
-            }
-
-
-            // Encontra o campeonato na coluna de origem
-            const sourceColumn = data.columns[sourceColumnKey];
-            const draggedChampIndex = sourceColumn.championships.findIndex(champ => champ.id === draggedChampId);
-
-
-            if (draggedChampIndex > -1) {
-                const [movedChamp] = sourceColumn.championships.splice(draggedChampIndex, 1);
-                movedChamp.id = Date.now() + Math.random(); // Gera novo ID para evitar conflitos se fosse persistido em DB sem cuidado
-                data.columns[targetColumnKey].championships.push(movedChamp);
-
-                saveData();
-                renderChampionships(sourceColumnKey); // Renderiza a coluna de origem
-                renderChampionships(targetColumnKey); // Renderiza a coluna de destino
-                showMessage(addChampMessage, `Campeonato movido para "${data.columns[targetColumnKey].name}"!`, 'success');
-            }
-
-
-            draggedItem.classList.remove('dragging');
-            draggedItem = null;
-        }
-
-
-        // --- Inicialização ---
-        document.addEventListener('DOMContentLoaded', () => {
-            loadData();
-            renderColumns();
-            // Inicialmente, as seções de admin devem estar ocultas
-            adminLoginForm.classList.remove('active');
-            addChampionshipSection.classList.remove('active');
-            addColumnSection.classList.remove('active');
-            updateAdminModeVisuals(); // Garante que os botões de exclusão estejam ocultos por padrão
+        colDiv.appendChild(colHeader);
+        colDiv.appendChild(hint);
+
+        // -- LISTA DE CAMPEONATOS --
+        const listDiv = document.createElement('div');
+        listDiv.classList.add('championships-list');
+        listDiv.id = 'list-' + key;
+        colDiv.appendChild(listDiv);
+
+        columnsContainer.appendChild(colDiv);
+        renderChampionships(key);
+    }
+}
+
+function renderChampionships(columnKey) {
+    const col = data.columns[columnKey];
+    const listDiv = document.getElementById('list-' + columnKey);
+    if (!col || !listDiv) return;
+
+    listDiv.innerHTML = '';
+
+    const champs = col.championships;
+    if (!Array.isArray(champs) || champs.length === 0) {
+        const empty = document.createElement('p');
+        empty.style.cssText = 'color:var(--light-text);font-size:.88em;padding:20px;';
+        empty.textContent = 'Nenhum campeonato nesta coluna.';
+        listDiv.appendChild(empty);
+        return;
+    }
+
+    champs.forEach(champ => {
+        const card = document.createElement('a');
+        card.href = champ.link || '#';
+        card.target = '_blank';
+        card.classList.add('championship-card');
+        card.draggable = true;
+        card.dataset.id = champ.id;
+        card.dataset.column = columnKey;
+        card.addEventListener('dragstart', dragStart);
+
+        const img = document.createElement('img');
+        img.src = champ.image || '';
+        img.alt = champ.name;
+        img.onerror = function() { this.src = 'https://placehold.co/110x110?text=⚽'; };
+        card.appendChild(img);
+
+        const h3 = document.createElement('h3');
+        h3.textContent = champ.name;
+        card.appendChild(h3);
+
+        const delBtn = document.createElement('button');
+        delBtn.classList.add('delete-card-btn');
+        delBtn.innerHTML = '&times;';
+        delBtn.title = 'Excluir ' + champ.name;
+        delBtn.addEventListener('click', e => {
+            e.preventDefault(); e.stopPropagation();
+            deleteChampionship(columnKey, champ.id);
         });
-    </script>
+        card.appendChild(delBtn);
+
+        listDiv.appendChild(card);
+    });
+}
+
+// ================================================================
+//  CRUD CAMPEONATOS / COLUNAS
+// ================================================================
+function addChampionship() {
+    const name  = document.getElementById('championshipName').value.trim();
+    const image = document.getElementById('imageLink').value.trim();
+    const link  = document.getElementById('championshipLink').value.trim();
+    const col   = columnSelect.value;
+
+    if (!name || !image || !link || !col) {
+        showMessage(addChampMessage, 'Preencha todos os campos!', 'error'); return;
+    }
+    if (!data.columns[col]) {
+        showMessage(addChampMessage, 'Coluna não encontrada!', 'error'); return;
+    }
+
+    const newChamp = { id: Date.now() + Math.random(), name, image, link };
+    data.columns[col].championships.push(newChamp);
+    scheduleSave();
+    renderChampionships(col);
+    showMessage(addChampMessage, `✅ "${name}" adicionado!`, 'success');
+    document.getElementById('championshipName').value = '';
+    document.getElementById('imageLink').value = '';
+    document.getElementById('championshipLink').value = '';
+    columnSelect.value = '';
+}
+
+function deleteChampionship(columnKey, champId) {
+    if (!isAdminMode) return;
+    const col = data.columns[columnKey];
+    if (!col || !Array.isArray(col.championships)) return;
+    const idx = col.championships.findIndex(c => c.id === champId);
+    if (idx === -1) return;
+    const name = col.championships[idx].name;
+    if (confirm(`Excluir "${name}"?`)) {
+        col.championships.splice(idx, 1);
+        scheduleSave();
+        renderChampionships(columnKey);
+    }
+}
+
+function addColumn() {
+    const name = document.getElementById('newColumnName').value.trim();
+    if (!name) { showMessage(addColumnMessage, 'Digite um nome para a coluna!', 'error'); return; }
+    // Usa timestamp como chave para garantir unicidade
+    const key = 'col_' + Date.now();
+    data.columns[key] = { name, championships: [] };
+    scheduleSave();
+    renderColumns();
+    showMessage(addColumnMessage, `✅ Coluna "${name}" criada!`, 'success');
+    document.getElementById('newColumnName').value = '';
+}
+
+// ================================================================
+//  DRAG AND DROP
+// ================================================================
+function dragStart(e) {
+    if (!isAdminMode) { e.preventDefault(); return; }
+    draggedItem = e.currentTarget;
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', draggedItem.dataset.id);
+    setTimeout(() => { if(draggedItem) draggedItem.classList.add('dragging'); }, 0);
+}
+function dragOver(e) {
+    e.preventDefault();
+    if (isAdminMode) e.currentTarget.classList.add('drag-over');
+}
+function dragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+function drop(e) {
+    e.preventDefault();
+    const target = e.currentTarget;
+    target.classList.remove('drag-over');
+    if (!isAdminMode || !draggedItem) return;
+    const champId  = parseFloat(draggedItem.dataset.id);
+    const srcKey   = draggedItem.dataset.column;
+    const tgtKey   = target.id.replace('column-', '');
+    if (srcKey === tgtKey) { draggedItem.classList.remove('dragging'); draggedItem = null; return; }
+    const src = data.columns[srcKey];
+    const idx = src.championships.findIndex(c => c.id === champId);
+    if (idx > -1) {
+        const [moved] = src.championships.splice(idx, 1);
+        moved.id = Date.now() + Math.random();
+        data.columns[tgtKey].championships.push(moved);
+        scheduleSave();
+        renderChampionships(srcKey);
+        renderChampionships(tgtKey);
+    }
+    draggedItem.classList.remove('dragging'); draggedItem = null;
+}
+
+// ================================================================
+//  MODO ADMIN
+// ================================================================
+document.getElementById('adminTrigger').addEventListener('click', () => {
+    if (isAdminMode) exitAdminMode(); else showAdminLogin();
+});
+
+function showAdminLogin() {
+    addChampSection.classList.remove('active');
+    addColumnSection.classList.remove('active');
+    adminLoginForm.classList.add('active');
+}
+
+async function enterAdminMode() {
+    const name  = document.getElementById('adminName').value.trim();
+    const phone = document.getElementById('adminPhone').value.trim();
+    const email = document.getElementById('adminEmail').value.trim();
+    if (!name || !phone || !email) { showMessage(loginMessage, 'Preencha todos os campos.', 'error'); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showMessage(loginMessage, 'E-mail inválido.', 'error'); return; }
+
+    data.adminInfo = { name, phone, email };
+    saveLocal();
+
+    // Log de acesso
+    if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('YOUR_')) {
+        try {
+            await fetch(APPS_SCRIPT_URL, {
+                method: 'POST', mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'logAdmin', name, phone, email, timestamp: new Date().toLocaleString('pt-BR') })
+            });
+        } catch(e) {}
+    }
+
+    isAdminMode = true;
+    document.body.classList.add('admin-mode');
+    adminLoginForm.classList.remove('active');
+    addChampSection.classList.add('active');
+    addColumnSection.classList.add('active');
+
+    // Carrega dados frescos do Sheets
+    const loaded = await pullFromSheets();
+    if (loaded) renderColumns();
+    showMessage(addChampMessage, `Bem-vindo, ${name}! ✓`, 'success');
+}
+
+function exitAdminMode() {
+    isAdminMode = false;
+    document.body.classList.remove('admin-mode');
+    adminLoginForm.classList.remove('active');
+    addChampSection.classList.remove('active');
+    addColumnSection.classList.remove('active');
+    document.getElementById('adminName').value = '';
+    document.getElementById('adminPhone').value = '';
+    document.getElementById('adminEmail').value = '';
+    renderColumns();
+}
+
+// ================================================================
+//  UTILITÁRIO
+// ================================================================
+function showMessage(el, msg, type) {
+    el.textContent = msg;
+    el.className = 'form-message ' + type;
+    clearTimeout(el._t);
+    el._t = setTimeout(() => { el.className = 'form-message'; el.textContent = ''; }, 4500);
+}
+
+// ================================================================
+//  INICIALIZAÇÃO
+// ================================================================
+document.addEventListener('DOMContentLoaded', async () => {
+    loadLocal();
+    renderColumns();
+    if (APPS_SCRIPT_URL && !APPS_SCRIPT_URL.includes('YOUR_')) {
+        const loaded = await pullFromSheets();
+        if (loaded) renderColumns();
+    } else {
+        setSyncStatus('error', 'Configure a URL do Apps Script');
+    }
+});
+</script>
 </body>
 </html>
