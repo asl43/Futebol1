@@ -79,12 +79,12 @@
             padding: 18px 30px;
             box-shadow: 0 4px 15px var(--shadow-medium);
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            position: sticky; /* Sticky header */
+            position: sticky;
             top: 0;
             z-index: 1000;
-            backdrop-filter: blur(5px); /* Efeito de vidro */
+            backdrop-filter: blur(5px);
         }
 
         header h1 {
@@ -95,36 +95,61 @@
             text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.05);
         }
 
+        /* Botão admin invisível - canto inferior direito */
         #adminModeToggle {
-            background-color: var(--accent-color);
-            color: var(--dark-text);
-            padding: 12px 25px;
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            width: 14px;
+            height: 14px;
+            background-color: transparent;
             border: none;
-            border-radius: 30px; /* Mais arredondado */
-            cursor: pointer;
-            font-size: 1.05em;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 8px var(--shadow-light);
-            display: flex;
-            align-items: center;
-            gap: 8px;
+            border-radius: 50%;
+            cursor: default;
+            z-index: 9999;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 0;
+            font-size: 0;
         }
 
         #adminModeToggle:hover {
-            background-color: var(--accent-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px var(--shadow-medium);
+            opacity: 0.15;
+            background-color: var(--light-text);
+            cursor: pointer;
         }
 
         #adminModeToggle.active-admin {
+            opacity: 0.25;
             background-color: var(--danger-color);
-            color: white; /* Mais contraste */
         }
 
         #adminModeToggle.active-admin:hover {
-            background-color: var(--danger-dark);
-            transform: translateY(-2px);
+            opacity: 0.45;
+        }
+
+        /* Indicador sutil de admin ativo */
+        #adminStatusDot {
+            position: fixed;
+            bottom: 18px;
+            right: 18px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--danger-color);
+            z-index: 9998;
+            display: none;
+            animation: pulse-dot 2s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.7; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.3); }
+        }
+
+        body.admin-mode #adminStatusDot {
+            display: block;
         }
 
         /* --- Formulários e Containers (Visibilidade controlada por JS) --- */
@@ -355,6 +380,115 @@
         }
 
 
+        /* --- Cabeçalho da coluna com controles admin --- */
+        .column-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            position: relative;
+        }
+
+        .column-header h2 {
+            margin: 0;
+            cursor: default;
+            transition: color 0.2s ease;
+            flex: 1;
+            text-align: center;
+        }
+
+        body.admin-mode .column-header h2 {
+            cursor: pointer;
+        }
+
+        body.admin-mode .column-header h2:hover {
+            color: var(--primary-color);
+        }
+
+        body.admin-mode .column-header h2::after {
+            /* sobrescreve o pseudo-elemento decorativo herdado */
+            display: none;
+        }
+
+        .column-rename-input {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--primary-dark);
+            border: 2px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 4px 10px;
+            text-align: center;
+            outline: none;
+            flex: 1;
+            display: none;
+        }
+
+        .column-rename-input.active {
+            display: block;
+        }
+
+        .column-actions {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            position: absolute;
+            right: 0;
+            top: 0;
+        }
+
+        body.admin-mode .column-actions {
+            display: flex;
+        }
+
+        .column-action-btn {
+            border: none;
+            border-radius: 6px;
+            width: 26px;
+            height: 26px;
+            font-size: 0.85em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            font-weight: 700;
+        }
+
+        .column-rename-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .column-rename-btn:hover {
+            background-color: var(--primary-dark);
+            transform: scale(1.1);
+        }
+
+        .column-delete-btn {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .column-delete-btn:hover {
+            background-color: var(--danger-dark);
+            transform: scale(1.1);
+        }
+
+        .column-rename-hint {
+            font-size: 0.72em;
+            color: var(--primary-color);
+            display: none;
+            margin-top: -8px;
+            margin-bottom: 4px;
+            opacity: 0.8;
+        }
+
+        body.admin-mode .column-rename-hint {
+            display: block;
+        }
+
         /* --- Botão de Excluir (Visível apenas no modo admin) --- */
         .delete-btn {
             background-color: var(--danger-color);
@@ -550,8 +684,11 @@
 <body>
     <header>
         <h1>Campeonatos de Futebol</h1>
-        <button id="adminModeToggle">Ativar Modo Admin</button>
     </header>
+
+    <!-- Botão admin invisível no canto inferior direito -->
+    <button id="adminModeToggle" title=""></button>
+    <div id="adminStatusDot" title="Modo Admin ativo"></div>
 
 
     <div id="adminLoginForm" class="admin-section">
@@ -725,9 +862,94 @@
                     columnDiv.addEventListener('drop', drop);
 
 
+                    // Container do cabeçalho da coluna
+                    const columnHeader = document.createElement('div');
+                    columnHeader.classList.add('column-header');
+
                     const columnTitle = document.createElement('h2');
                     columnTitle.textContent = column.name;
-                    columnDiv.appendChild(columnTitle);
+                    columnTitle.title = 'Clique para renomear (modo admin)';
+
+                    const renameInput = document.createElement('input');
+                    renameInput.type = 'text';
+                    renameInput.classList.add('column-rename-input');
+                    renameInput.value = column.name;
+
+                    const columnActions = document.createElement('div');
+                    columnActions.classList.add('column-actions');
+
+                    const renameBtn = document.createElement('button');
+                    renameBtn.classList.add('column-action-btn', 'column-rename-btn');
+                    renameBtn.innerHTML = '✏️';
+                    renameBtn.title = 'Renomear coluna';
+
+                    const deleteColBtn = document.createElement('button');
+                    deleteColBtn.classList.add('column-action-btn', 'column-delete-btn');
+                    deleteColBtn.innerHTML = '🗑️';
+                    deleteColBtn.title = 'Excluir coluna';
+
+                    columnActions.appendChild(renameBtn);
+                    columnActions.appendChild(deleteColBtn);
+
+                    // Hint de clique para renomear
+                    const renameHint = document.createElement('span');
+                    renameHint.classList.add('column-rename-hint');
+                    renameHint.textContent = '✏ clique para renomear';
+
+                    // Lógica de renomear pelo botão ou clique no título
+                    function activateRename() {
+                        if (!isAdminMode) return;
+                        renameInput.value = column.name;
+                        columnTitle.style.display = 'none';
+                        renameInput.classList.add('active');
+                        renameInput.focus();
+                        renameInput.select();
+                    }
+
+                    function confirmRename() {
+                        const newName = renameInput.value.trim();
+                        if (newName && newName !== column.name) {
+                            column.name = newName;
+                            columnTitle.textContent = newName;
+                            saveData();
+                            renderColumns(); // re-renderiza para atualizar select
+                            return;
+                        }
+                        columnTitle.style.display = '';
+                        renameInput.classList.remove('active');
+                    }
+
+                    renameBtn.addEventListener('click', activateRename);
+                    columnTitle.addEventListener('click', activateRename);
+
+                    renameInput.addEventListener('blur', confirmRename);
+                    renameInput.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') confirmRename();
+                        if (e.key === 'Escape') {
+                            columnTitle.style.display = '';
+                            renameInput.classList.remove('active');
+                        }
+                    });
+
+                    // Lógica de excluir coluna
+                    deleteColBtn.addEventListener('click', () => {
+                        if (!isAdminMode) return;
+                        const champCount = column.championships.length;
+                        const confirmMsg = champCount > 0
+                            ? `Tem certeza que deseja excluir a coluna "${column.name}"?\nEla contém ${champCount} campeonato(s) que também serão excluídos!`
+                            : `Tem certeza que deseja excluir a coluna "${column.name}"?`;
+                        if (confirm(confirmMsg)) {
+                            delete data.columns[key];
+                            saveData();
+                            renderColumns();
+                        }
+                    });
+
+                    columnHeader.appendChild(columnTitle);
+                    columnHeader.appendChild(renameInput);
+                    columnHeader.appendChild(columnActions);
+                    columnDiv.appendChild(columnHeader);
+                    columnDiv.appendChild(renameHint);
 
 
                     const championshipsListDiv = document.createElement('div');
@@ -814,7 +1036,6 @@
             addColumnSection.classList.remove('active');
             adminLoginForm.classList.add('active'); // Mostra apenas o formulário de login
 
-            adminModeToggle.textContent = 'Modo Admin Ativo';
             adminModeToggle.classList.remove('active-admin');
             document.body.classList.remove('admin-mode');
             updateAdminModeVisuals();
@@ -848,7 +1069,6 @@
 
             if(success) {
                 isAdminMode = true;
-                adminModeToggle.textContent = 'Sair do Modo Admin';
                 adminModeToggle.classList.add('active-admin');
                 document.body.classList.add('admin-mode');
 
@@ -866,7 +1086,6 @@
 
         function exitAdminMode() {
             isAdminMode = false;
-            adminModeToggle.textContent = 'Ativar Modo Admin';
             adminModeToggle.classList.remove('active-admin');
             document.body.classList.remove('admin-mode');
             
