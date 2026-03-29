@@ -293,6 +293,19 @@ body.admin-mode #exitBtn{display:flex}
 .modal-ov.on{display:flex}
 .modal-box{background:var(--bg2);border:1px solid var(--brd2);border-radius:var(--rl);padding:20px;max-width:360px;width:100%;animation:fup .25s ease}
 .modal-box h3{font-family:var(--fd);font-size:1.1em;color:var(--acc);margin-bottom:11px;letter-spacing:.3px}
+
+/* SYNC BAR */
+#syncBar{position:fixed;top:66px;right:12px;background:rgba(6,11,24,.92);backdrop-filter:blur(10px);border:1px solid var(--brd2);border-radius:var(--rxl);padding:4px 11px 4px 7px;font-size:.68em;color:var(--t2);z-index:700;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(0,0,0,.3);cursor:pointer;transition:all .2s}
+#syncBar:hover{border-color:var(--acc);color:var(--acc)}
+body.light #syncBar{background:rgba(238,242,248,.95)}
+.sdot{width:7px;height:7px;border-radius:50%;background:var(--brd2);flex-shrink:0}
+#syncBar.syncing .sdot{background:var(--acc2);animation:blink 1s infinite}
+#syncBar.syncing{color:var(--acc2)}
+#syncBar.ok .sdot{background:var(--acc)}
+#syncBar.ok{color:var(--acc)}
+#syncBar.err .sdot{background:var(--acc3)}
+#syncBar.err{color:var(--acc3)}
+
 #toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%);background:var(--acc);color:var(--bg0);padding:8px 18px;border-radius:30px;font:700 .85em var(--fb);z-index:9999;box-shadow:0 4px 14px rgba(0,229,160,.4);opacity:0;transition:opacity .3s;pointer-events:none}
 @media(max-width:600px){#colsWrap{grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:9px}main{padding:0 9px 80px}}
 @media(max-width:380px){#colsWrap{grid-template-columns:1fr 1fr}}
@@ -431,6 +444,7 @@ body.admin-mode #exitBtn{display:flex}
   <div id="colsWrap" style="margin-top:14px"></div>
 </div>
 </main>
+<div id="syncBar" onclick="syncManual()" title="Clique para sincronizar"><div class="sdot"></div><span id="syncTxt">Local</span></div>
 <div class="modal-ov" id="modal" onclick="if(event.target===this)closeModal()">
   <div class="modal-box"><h3 id="modalTitulo"></h3><div id="modalCorpo"></div></div>
 </div>
@@ -1088,7 +1102,74 @@ function preloadFlamengo(){
 function sanitize(raw){if(!Array.isArray(raw))return[];return raw.filter(c=>c&&c.key).map((c,i)=>({key:String(c.key),name:String(c.name||''),order:isFinite(+c.order)?+c.order:i,championships:Array.isArray(c.championships)?c.championships.map(ch=>({id:ch.id?String(ch.id):uid(),name:String(ch.name||''),image:String(ch.image||''),link:String(ch.link||'')})):[]})).sort((a,b)=>a.order-b.order)}
 function loadLocal(){try{const r=localStorage.getItem(STORE);if(r){cols=sanitize(JSON.parse(r));return}migrateOld()}catch{}}
 function saveLocal(){cols.forEach((c,i)=>c.order=i);localStorage.setItem(STORE,JSON.stringify(cols))}
-function scheduleSave(){saveLocal()}
+function scheduleSave(){saveLocal();clearTimeout(scheduleSave._t);scheduleSave._t=setTimeout(pushSheets,1500)}
+function setSyncStatus(st,txt){const b=document.getElementById('syncBar');const t=document.getElementById('syncTxt');if(b)b.className=st;if(t)t.textContent=txt}
+
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbzbsstKFIxJtAzCd61RicnIPxMG1gEKCTp9ViXxCfa9ZL8b3UPw2J0pSnVOawI5njpD/exec';
+
+async function pushSheets(){
+  setSyncStatus('syncing','Salvando...');
+  const cp={};cols.forEach((c,i)=>{cp[c.key]={name:c.name,order:i,championships:c.championships}});
+  try{
+    await fetch(SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({action:'saveAll',payload:{columns:cp},alertas:getAlertas()})});
+    setSyncStatus('ok','Salvo '+new Date().toLocaleTimeString('pt-BR'));
+  }catch{setSyncStatus('err','Erro ao salvar')}
+}
+
+async function pullSheets(){
+  setSyncStatus('syncing','Carregando...');
+  try{
+    const r=await fetch(SCRIPT_URL+'?action=getAll');
+    const json=await r.json();
+    let updated=false;
+    // Campeonatos: formato {columns: {key:{name,order,championships:[]}}}
+    if(json&&json.columns&&Object.keys(json.columns).length){
+      const arr=[];
+      for(const k in json.columns){
+        const c=json.columns[k];
+        arr.push({
+          key:String(k),
+          name:String(c.name||k),
+          order:isFinite(+c.order)?+c.order:arr.length,
+          championships:(Array.isArray(c.championships)?c.championships:[]).map(ch=>({
+            id:String(ch.id||uid()),
+            name:String(ch.name||''),
+            image:String(ch.image||''),
+            link:String(ch.link||'')
+          }))
+        });
+      }
+      if(arr.length){
+        cols=arr.sort((a,b)=>a.order-b.order);
+        saveLocal();
+        updated=true;
+      }
+    }
+    // Alertas: array de objetos JSON
+    if(Array.isArray(json&&json.alertas)&&json.alertas.length){
+      const locais=getAlertas();
+      const vis=new Set(locais.map(j=>j.dataISO+'|'+(j.time||'').toLowerCase()));
+      const novos=json.alertas.filter(j=>j&&j.dataISO&&!vis.has(j.dataISO+'|'+(j.time||'').toLowerCase()));
+      if(novos.length){
+        saveAlertas([...locais,...novos]);
+        updated=true;
+      }
+    }
+    setSyncStatus('ok','Sync '+new Date().toLocaleTimeString('pt-BR'));
+    return updated;
+  }catch(e){
+    console.warn('pullSheets error:',e);
+    setSyncStatus('err','Offline');
+    return false;
+  }
+}
+
+async function syncManual(){
+  const ok=await pullSheets();
+  if(ok){renderGrid();renderProxCard();atualizarBadge();verificarHoje();showToast('Dados sincronizados!');}
+  else showToast('Nenhuma atualizacao encontrada');
+}
 function migrateOld(){for(const k of['camp_v4','campeonatosData_v3','championshipsData']){try{const r=localStorage.getItem(k);if(!r)continue;const p=JSON.parse(r);if(Array.isArray(p)&&p.length){cols=sanitize(p);saveLocal();return}}catch{}}}
 const DEFAULTS=[
   {key:'brasileiros',name:'Campeonatos Brasileiros',order:0,championships:[
@@ -1184,7 +1265,7 @@ function enterAdmin(){const name=document.getElementById('aName').value.trim(),p
 function exitAdmin(){isAdmin=false;document.body.classList.remove('admin-mode');['pLogin','pChamp','pCol','pOrder'].forEach(id=>document.getElementById(id).classList.remove('on'));document.getElementById('aName').value='';document.getElementById('aPhone').value='';document.getElementById('aEmail').value='';renderGrid()}
 
 /* ═══════ INIT ═══════ */
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
   if(localStorage.getItem('fl_tema')==='light'){document.body.classList.add('light');document.getElementById('btnTemaTxt').textContent='☀ Claro';document.getElementById('temaIco').innerHTML='<path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/>'}
   loadLocal();
   if(!cols.length)cols=DEFAULTS.map(c=>({...c,championships:c.championships.map(ch=>({...ch}))}));
@@ -1196,6 +1277,9 @@ document.addEventListener('DOMContentLoaded',()=>{
   if(Notification.permission==='default')Notification.requestPermission();
   setInterval(()=>{verificarHoje();atualizarBadge();renderProxCard();verificarNotifAntecipadas()},60*60*1000);
   verificarNotifAntecipadas();
+  // Sync com Sheets
+  const _updated=await pullSheets();
+  if(_updated){renderGrid();renderProxCard();atualizarBadge();verificarHoje();}
 });
 </script>
 </body>
